@@ -1,6 +1,7 @@
-import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import prisma from "@/lib/database";
 
-export default function Home() {
+const Home = async () => {
   return (
     <main>
       <h1 className="text-blue-600 text-5xl">This is home page</h1>
@@ -8,4 +9,6 @@ export default function Home() {
       <p>another paragraph</p>
     </main>
   );
-}
+};
+
+export default Home;
