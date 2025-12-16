@@ -25,6 +25,9 @@ const Home = () => {
       onSuccess: () => {
         toast.success("AI Jobs Executed");
       },
+      onError: () => {
+        toast.error("Request Failed!");
+      },
     })
   );
 

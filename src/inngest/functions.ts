@@ -1,6 +1,6 @@
 import prisma from "@/lib/database";
 import { inngest } from "./client";
-
+import * as Sentry from "@sentry/nextjs";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createAnthropic } from "@ai-sdk/anthropic";
@@ -14,6 +14,11 @@ export const execute = inngest.createFunction(
   { id: "execute-ai", retries: 1 },
   { event: "execute/gemini-ai" },
   async ({ event, step }) => {
+    Sentry.logger.warn("execute-ai - console log", {
+      endpoint: "/api/inngest/execute",
+    });
+    Sentry.logger.error("execute-ai - console error");
+
     // Gemini
     const { steps: geminiSteps } = await step.ai.wrap(
       "gemini-generate-text",
@@ -22,6 +27,11 @@ export const execute = inngest.createFunction(
         model: google("gemini-2.5-flash"),
         system: "You are a helpful assistant",
         prompt: "How deep is the deepest part of the great lakes? ",
+        experimental_telemetry: {
+          isEnabled: true,
+          recordInputs: true,
+          recordOutputs: true,
+        },
       }
     );
 
@@ -33,6 +43,11 @@ export const execute = inngest.createFunction(
         model: openAi("gpt-4"),
         system: "You are an expert aviator",
         prompt: "Explain to me what is ILS as if I was brand new to aviation",
+        experimental_telemetry: {
+          isEnabled: true,
+          recordInputs: true,
+          recordOutputs: true,
+        },
       }
     );
 
@@ -45,6 +60,11 @@ export const execute = inngest.createFunction(
         system: "You are a software engineer",
         prompt:
           "In your opinion what is the best languge to learn when moving from a Frontend Engineer (JS) to a backend engineer that wants to learn a backend language?",
+        experimental_telemetry: {
+          isEnabled: true,
+          recordInputs: true,
+          recordOutputs: true,
+        },
       }
     );
     return {
