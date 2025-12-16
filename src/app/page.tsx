@@ -20,14 +20,27 @@ const Home = () => {
     })
   );
 
+  const testAi = useMutation(
+    trpc.testAi.mutationOptions({
+      onSuccess: () => {
+        toast.success("AI Jobs Executed");
+      },
+    })
+  );
+
   return (
-    <main>
+    <main className="w-full h-full flex items-center justify-center flex-col gap-10">
       <h1 className="text-blue-600 text-5xl">This is home page</h1>
-      <div>{JSON.stringify(data, null, 2)}</div>
+      <div className="px-10 text-center">{JSON.stringify(data, null, 2)}</div>
       <Button disabled={create.isPending} onClick={() => create.mutate()}>
         Create Workflow
       </Button>
       <LogoutButton />
+      <div>
+        <Button disabled={testAi.isPending} onClick={() => testAi.mutate()}>
+          Test AI
+        </Button>
+      </div>
     </main>
   );
 };
