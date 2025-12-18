@@ -8,13 +8,16 @@ const nextConfig: NextConfig = {
       {
         source: "/",
         destination: "/workflows",
-        permanent: false, // if set to true it could affect all other
+        permanent: false, // leave this as false, if set to true it could affect all other projects
       },
     ];
   },
   devIndicators: false,
 };
 
+/**
+ *  ------ SENTRY CONFIG -------
+ */
 export default withSentryConfig(nextConfig, {
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options

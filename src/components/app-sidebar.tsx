@@ -11,6 +11,8 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+import { useHasActiveSubscription } from "@/features/subscriptions/hooks/use-subscription";
 
 import {
   Sidebar,
@@ -23,8 +25,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-
-import { authClient } from "@/lib/auth-client";
 
 const menueItems = [
   {
@@ -52,6 +52,24 @@ const menueItems = [
 export const AppSidebar = () => {
   const router = useRouter();
   const pathname = usePathname();
+
+  const { hasActiveSubscription, customerState, isLoading } =
+    useHasActiveSubscription();
+
+  console.log("customer state");
+  console.log(customerState);
+
+  const handleTest = async () => {
+    const { data: orders } = await authClient.customer.orders.list({
+      query: {
+        page: 1,
+        limit: 10,
+      },
+    });
+
+    console.log("ORDERS");
+    console.log(orders);
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -101,21 +119,23 @@ export const AppSidebar = () => {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              tooltip="Upgrade to Pro"
-              className="gap-x-4 h-10 px-4"
-              onClick={() => {}}
-            >
-              <StarIcon className="h-4 w-4" />
-              <span>Upgrade to Pro</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+          {!hasActiveSubscription && !isLoading && (
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                tooltip="Upgrade to Pro"
+                className="gap-x-4 h-10 px-4"
+                onClick={() => authClient.checkout({ slug: "superglue-pro" })}
+              >
+                <StarIcon className="h-4 w-4" />
+                <span>Upgrade to Pro</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip="Billing Portal"
               className="gap-x-4 h-10 px-4"
-              onClick={() => {}}
+              onClick={() => authClient.customer.portal()}
             >
               <CreditCardIcon className="h-4 w-4" />
               <span>Billing Portal</span>
@@ -137,6 +157,16 @@ export const AppSidebar = () => {
             >
               <LogOutIcon className="h-4 w-4" />
               <span>Sign Out</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              tooltip="Sign Out"
+              className="gap-x-4 h-10 px-4"
+              onClick={handleTest}
+            >
+              <LogOutIcon className="h-4 w-4" />
+              <span>Temp Orders (delete Me)</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
