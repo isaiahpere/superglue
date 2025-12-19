@@ -7,11 +7,19 @@ import { requireAuth } from "@/lib/auth-utils";
 import { HydrateClient } from "@/trpc/server";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import type { SearchParams } from "nuqs/server";
 
-const Page = async () => {
+import { workflowsParamsLoader } from "@/features/workflows/server/params-loader";
+
+type Props = {
+  searchParams: Promise<SearchParams>;
+};
+
+const Page = async ({ searchParams }: Props) => {
   await requireAuth();
+  const params = await workflowsParamsLoader(searchParams);
 
-  prefetchWorkflows();
+  prefetchWorkflows(params);
 
   return (
     <WorkflowsContainer>
