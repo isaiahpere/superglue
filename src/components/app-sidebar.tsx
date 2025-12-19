@@ -59,18 +59,6 @@ export const AppSidebar = () => {
   console.log("customer state");
   console.log(customerState);
 
-  const handleTest = async () => {
-    const { data: orders } = await authClient.customer.orders.list({
-      query: {
-        page: 1,
-        limit: 10,
-      },
-    });
-
-    console.log("ORDERS");
-    console.log(orders);
-  };
-
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -157,16 +145,6 @@ export const AppSidebar = () => {
             >
               <LogOutIcon className="h-4 w-4" />
               <span>Sign Out</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              tooltip="Sign Out"
-              className="gap-x-4 h-10 px-4"
-              onClick={handleTest}
-            >
-              <LogOutIcon className="h-4 w-4" />
-              <span>Temp Orders (delete Me)</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
