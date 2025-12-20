@@ -23,18 +23,16 @@ const Page = async ({ params }: PageProps) => {
   prefetchWorkflow(workflowId); // populate cache
 
   return (
-    <div>
-      <HydrateClient>
-        <ErrorBoundary fallback={<EditorError />}>
-          <Suspense fallback={<EditorLoading />}>
-            <EditorHeader workflowId={workflowId} />
-            <main className="flex-1">
-              <Editor workflowId={workflowId} />
-            </main>
-          </Suspense>
-        </ErrorBoundary>
-      </HydrateClient>
-    </div>
+    <HydrateClient>
+      <ErrorBoundary fallback={<EditorError />}>
+        <Suspense fallback={<EditorLoading />}>
+          <EditorHeader workflowId={workflowId} />
+          <main className="flex-1">
+            <Editor workflowId={workflowId} />
+          </main>
+        </Suspense>
+      </ErrorBoundary>
+    </HydrateClient>
   );
 };
 
