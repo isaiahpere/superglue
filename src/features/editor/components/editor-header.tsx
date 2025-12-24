@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { SaveIcon } from "lucide-react";
+import { useAtomValue } from "jotai";
 import Link from "next/link";
 
 import {
@@ -16,13 +17,40 @@ import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
   useSuspenseWorkflow,
+  useUpdateWorkflow,
   useUpdateWorkflowName,
 } from "@/features/workflows/hooks/use-workflows";
+import { editorAtom } from "../store/atoms";
 
+/**
+ *  UI button to save workflow and its nodes/edges
+ *
+ * @param workflowId unique workflow id
+ * @returns JSX button into editor header
+ */
 export const EditorSaveButton = ({ workflowId }: { workflowId: string }) => {
+  const editor = useAtomValue(editorAtom);
+  const saveWorkflow = useUpdateWorkflow();
+
+  const handleSave = () => {
+    if (!editor) return;
+
+    const nodes = editor.getNodes();
+    const edges = editor.getEdges();
+
+    saveWorkflow.mutate({
+      id: workflowId,
+      nodes,
+      edges,
+    });
+  };
   return (
     <div className="ml-auto">
-      <Button size={"sm"} onClick={() => {}} disabled>
+      <Button
+        size={"sm"}
+        onClick={handleSave}
+        disabled={saveWorkflow.isPending}
+      >
         <SaveIcon className="size-4" />
         Save
       </Button>
@@ -30,6 +58,12 @@ export const EditorSaveButton = ({ workflowId }: { workflowId: string }) => {
   );
 };
 
+/**
+ * UI to allow user to update the name of the workflow and save to db
+ *
+ * @param workflowId unique workflow identifier
+ * @returns
+ */
 export const EditorNameInput = ({ workflowId }: { workflowId: string }) => {
   const { data: workflow } = useSuspenseWorkflow(workflowId);
   const updateWorkflow = useUpdateWorkflowName();
