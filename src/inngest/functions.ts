@@ -1,76 +1,51 @@
-import prisma from "@/lib/database";
+import { NonRetriableError } from "inngest";
 import { inngest } from "./client";
-import * as Sentry from "@sentry/nextjs";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { createOpenAI } from "@ai-sdk/openai";
-import { createAnthropic } from "@ai-sdk/anthropic";
-import { generateText } from "ai";
+import { NodeType } from "@/generated/prisma/enums";
 
-const google = createGoogleGenerativeAI();
-const openAi = createOpenAI();
-const anthropic = createAnthropic(); // do not have key for this one
+import prisma from "@/lib/database";
+import { topoplogicalSort } from "./utils";
+import { getExecutor } from "@/features/executions/lib/executor-registry";
 
-export const execute = inngest.createFunction(
-  { id: "execute-ai", retries: 1 },
-  { event: "execute/gemini-ai" },
+export const executeWorkflow = inngest.createFunction(
+  { id: "execute-worfklow", retries: 3 },
+  { event: "worfklows/execute.workflow" },
   async ({ event, step }) => {
-    Sentry.logger.warn("execute-ai - console log", {
-      endpoint: "/api/inngest/execute",
+    const workflowId = event.data.workflowId;
+
+    console.log("executeWorkflow-Event");
+    console.log(event);
+
+    if (!workflowId) throw new NonRetriableError("Workflow Id is missing");
+
+    const sortedNodes = await step.run("prepare-workflow", async () => {
+      const workflow = await prisma.workflow.findUniqueOrThrow({
+        where: {
+          id: workflowId,
+        },
+        include: { nodes: true, connections: true },
+      });
+
+      return topoplogicalSort(workflow.nodes, workflow.connections);
     });
-    Sentry.logger.error("execute-ai - console error");
 
-    // Gemini
-    const { steps: geminiSteps } = await step.ai.wrap(
-      "gemini-generate-text",
-      generateText,
-      {
-        model: google("gemini-2.5-flash"),
-        system: "You are a helpful assistant",
-        prompt: "How deep is the deepest part of the great lakes? ",
-        experimental_telemetry: {
-          isEnabled: true,
-          recordInputs: true,
-          recordOutputs: true,
-        },
-      }
-    );
+    // init context with initial data from trigger
+    // usecase webhooks could pass data, we capture it here and pass it down in our next call to inngest.
+    let context = event.data.initialData || {};
 
-    // OpenAi
-    const { steps: openAiSteps } = await step.ai.wrap(
-      "openAi-generate-text",
-      generateText,
-      {
-        model: openAi("gpt-4"),
-        system: "You are an expert aviator",
-        prompt: "Explain to me what is ILS as if I was brand new to aviation",
-        experimental_telemetry: {
-          isEnabled: true,
-          recordInputs: true,
-          recordOutputs: true,
-        },
-      }
-    );
+    // execute each node
+    for (const node of sortedNodes) {
+      const executor = getExecutor(node.type as NodeType);
+      context = await executor({
+        data: node.data as Record<string, unknown>,
+        nodeId: node.id,
+        context,
+        step,
+      });
+    }
 
-    // Anthropic
-    const { steps: anthropicSteps } = await step.ai.wrap(
-      "anthropic-generate-text",
-      generateText,
-      {
-        model: anthropic("claude-3-7-sonnet-20250219"),
-        system: "You are a software engineer",
-        prompt:
-          "In your opinion what is the best languge to learn when moving from a Frontend Engineer (JS) to a backend engineer that wants to learn a backend language?",
-        experimental_telemetry: {
-          isEnabled: true,
-          recordInputs: true,
-          recordOutputs: true,
-        },
-      }
-    );
     return {
-      geminiSteps,
-      openAiSteps,
-      anthropicSteps,
+      workflowId,
+      result: context,
     };
   }
 );

@@ -10,8 +10,27 @@ import { PAGINATION } from "@/config/constants";
 import { TRPCError } from "@trpc/server";
 import { NodeType } from "@/generated/prisma/enums";
 import type { Node, Edge } from "@xyflow/react";
+import { inngest } from "@/inngest/client";
 
 export const workflowsRouter = createTRPCRouter({
+  execute: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const workflow = await prisma.workflow.findFirstOrThrow({
+        where: {
+          id: input.id,
+          userId: ctx.auth.user.id,
+        },
+      });
+
+      // inngest id === inngest function event
+      await inngest.send({
+        name: "worfklows/execute.workflow",
+        data: { workflowId: input.id }, // passed down to inngest event
+      });
+
+      return workflow;
+    }),
   create: premiumProcedure.mutation(({ ctx }) => {
     return prisma.workflow.create({
       data: {
