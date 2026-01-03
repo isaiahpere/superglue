@@ -40,15 +40,24 @@ export const HttpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
   }
 
   const result = await step.run("http-request", async () => {
-    const endpoint = Handlebars.compile(data.endpoint)(context);
-    console.log("ENDPOINT: ", { endpoint });
+    let endpoint: string;
+    try {
+      const template = Handlebars.compile(data.endpoint);
+      endpoint = template(context);
+      if (!endpoint || typeof endpoint !== "string") {
+        throw new Error("Endpoint template must resolve to a non-empty string");
+      }
+    } catch (error) {
+      throw new NonRetriableError(
+        `HTTP Request node: failed to resolve endpoint template ${error}`
+      );
+    }
     const method = data.method;
 
     const options: KyOptions = { method };
 
     if (["POST", "PUT", "PATCH"].includes(method)) {
       const resolved = Handlebars.compile(data.body || "{}")(context);
-      console.log("BODY", { resolved });
       JSON.parse(resolved);
       options.body = resolved;
       options.headers = {
