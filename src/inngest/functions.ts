@@ -9,7 +9,7 @@ import { httpRequestChannel } from "./channels/http-request";
 import { manualTriggerChannel } from "./channels/manual-trigger";
 
 export const executeWorkflow = inngest.createFunction(
-  { id: "execute-worfklow", retries: 1 },
+  { id: "execute-worfklow", retries: 1 }, // TODO: update retires for production
   {
     event: "worfklows/execute.workflow",
     channels: [httpRequestChannel(), manualTriggerChannel()],
