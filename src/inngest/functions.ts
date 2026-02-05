@@ -7,18 +7,20 @@ import { topoplogicalSort } from "./utils";
 import { getExecutor } from "@/features/executions/lib/executor-registry";
 import { httpRequestChannel } from "./channels/http-request";
 import { manualTriggerChannel } from "./channels/manual-trigger";
+import { googleFormTriggerChannel } from "./channels/google-form-trigger";
 
 export const executeWorkflow = inngest.createFunction(
   { id: "execute-worfklow", retries: 1 }, // TODO: update retires for production
   {
     event: "worfklows/execute.workflow",
-    channels: [httpRequestChannel(), manualTriggerChannel()],
+    channels: [
+      httpRequestChannel(),
+      manualTriggerChannel(),
+      googleFormTriggerChannel(),
+    ],
   },
   async ({ event, step, publish }) => {
     const workflowId = event.data.workflowId;
-
-    console.log("executeWorkflow-Event");
-    console.log(event);
 
     if (!workflowId) throw new NonRetriableError("Workflow Id is missing");
 
@@ -33,8 +35,8 @@ export const executeWorkflow = inngest.createFunction(
       return topoplogicalSort(workflow.nodes, workflow.connections);
     });
 
-    // init context with initial data from trigger
-    // usecase webhooks could pass data, we capture it here and pass it down in our next call to inngest.
+    // initialData is set by items such as googleForm webhook to pass down form data.
+    // data is captured and pass it down in our next call to inngest.
     let context = event.data.initialData || {};
 
     // execute each node
@@ -53,5 +55,5 @@ export const executeWorkflow = inngest.createFunction(
       workflowId,
       result: context,
     };
-  }
+  },
 );

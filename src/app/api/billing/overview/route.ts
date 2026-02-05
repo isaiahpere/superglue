@@ -17,9 +17,6 @@ export async function GET() {
   });
 
   const customerId = subscriptions.items[0]?.customerId;
-  console.log("\n");
-  console.log("Customer ID : ", customerId);
-  console.log("\n");
 
   const [ordersRes, subsRes] = await Promise.all([
     polarClient.orders.list({
@@ -32,7 +29,7 @@ export async function GET() {
   ]);
 
   const activeSubscription = subsRes.result.items.find(
-    (s) => s.status === "active" || s.status === "trialing"
+    (s) => s.status === "active" || s.status === "trialing",
   );
 
   const orders = ordersRes.result.items;

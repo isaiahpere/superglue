@@ -1,9 +1,11 @@
 import { Connection, Node } from "@/generated/prisma/client";
 import toposort from "toposort";
+import { inngest } from "./client";
+// import { inngest } from "@/inngest/client";
 
 export const topoplogicalSort = (
   nodes: Node[],
-  connections: Connection[]
+  connections: Connection[],
 ): Node[] => {
   // if zero nodes are connected returned nodes
   if (connections.length === 0) {
@@ -45,4 +47,14 @@ export const topoplogicalSort = (
   const nodeMap = new Map(nodes.map((node) => [node.id, node]));
 
   return sortedNodeIds.map((id) => nodeMap.get(id)!).filter(Boolean);
+};
+
+export const sendWorkflowExecution = async (data: {
+  workflowId: string;
+  [key: string]: any;
+}) => {
+  return inngest.send({
+    name: "worfklows/execute.workflow",
+    data,
+  });
 };

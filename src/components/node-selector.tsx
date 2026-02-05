@@ -31,6 +31,12 @@ const triggerNodes: NodeTypeOption[] = [
     description: "Run the flow by clicking button. Quick start",
     icon: MousePointerIcon,
   },
+  {
+    type: NodeType.GOOGLE_FORM_TRIGGER,
+    label: "Google Form",
+    description: "Run the flow when a google form is submitted",
+    icon: "/logos/googleform.svg",
+  },
 ];
 
 const executionNodes: NodeTypeOption[] = [
@@ -60,7 +66,7 @@ export const NodeSelector = ({
       if (selection.type === NodeType.MANUAL_TRIGGER) {
         const nodes = getNodes();
         const hasManualtrigger = nodes.some(
-          (node) => node.type === NodeType.MANUAL_TRIGGER
+          (node) => node.type === NodeType.MANUAL_TRIGGER,
         );
 
         if (hasManualtrigger) {
@@ -71,7 +77,7 @@ export const NodeSelector = ({
 
       setNodes((nodes) => {
         const hasInitialTrigger = nodes.some(
-          (node) => node.type === NodeType.INITIAL
+          (node) => node.type === NodeType.INITIAL,
         );
 
         const centerX = window.innerWidth / 2;
@@ -98,7 +104,7 @@ export const NodeSelector = ({
       });
       onOpenChange(false);
     },
-    [setNodes, getNodes, onOpenChange, screenToFlowPosition]
+    [setNodes, getNodes, onOpenChange, screenToFlowPosition],
   );
 
   return (
@@ -126,7 +132,7 @@ export const NodeSelector = ({
                     <img
                       src={Icon}
                       alt={nodeType.label}
-                      className="size=5 object-contain rounded-sm"
+                      className="size-5 object-contain rounded-sm"
                     />
                   ) : (
                     <Icon className="size-5" />

@@ -29,26 +29,26 @@ export const HttpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
     httpRequestChannel().status({
       nodeId: nodeId,
       status: "loading",
-    })
+    }),
   );
 
   if (!data.endpoint) {
     await publish(
-      httpRequestChannel().status({ nodeId: nodeId, status: "error" })
+      httpRequestChannel().status({ nodeId: nodeId, status: "error" }),
     );
     throw new NonRetriableError("HTTP Request node: no endpoint configured");
   }
   if (!data.variableName) {
     await publish(
-      httpRequestChannel().status({ nodeId: nodeId, status: "error" })
+      httpRequestChannel().status({ nodeId: nodeId, status: "error" }),
     );
     throw new NonRetriableError(
-      "HTTP Request node: variable name not configured"
+      "HTTP Request node: variable name not configured",
     );
   }
   if (!data.method) {
     await publish(
-      httpRequestChannel().status({ nodeId: nodeId, status: "error" })
+      httpRequestChannel().status({ nodeId: nodeId, status: "error" }),
     );
     throw new NonRetriableError("HTTP Request node: method not configured");
   }
@@ -61,12 +61,12 @@ export const HttpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
         endpoint = template(context);
         if (!endpoint || typeof endpoint !== "string") {
           throw new Error(
-            "Endpoint template must resolve to a non-empty string"
+            "Endpoint template must resolve to a non-empty string",
           );
         }
       } catch (error) {
         throw new NonRetriableError(
-          `HTTP Request node: failed to resolve endpoint template ${error}`
+          `HTTP Request node: failed to resolve endpoint template ${error}`,
         );
       }
       const method = data.method;
@@ -103,13 +103,13 @@ export const HttpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
     });
 
     await publish(
-      httpRequestChannel().status({ nodeId: nodeId, status: "success" })
+      httpRequestChannel().status({ nodeId: nodeId, status: "success" }),
     );
 
     return result;
   } catch (error) {
     await publish(
-      httpRequestChannel().status({ nodeId: nodeId, status: "error" })
+      httpRequestChannel().status({ nodeId: nodeId, status: "error" }),
     );
     throw error;
   }

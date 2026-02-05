@@ -54,7 +54,6 @@ export const RegisterForm = () => {
   });
 
   const onSubmit = async (values: RegisterValues) => {
-    console.log(values);
     await authClient.signUp.email(
       {
         name: values.email,
@@ -69,7 +68,7 @@ export const RegisterForm = () => {
         onError: (ctx) => {
           toast.error(ctx.error.message);
         },
-      }
+      },
     );
   };
 
